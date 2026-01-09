@@ -1,11 +1,15 @@
 package com.reer.reerAI2.reerAI2.service;
 
+import com.reer.reerAI2.reerAI2.records.UserProfile;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
+import org.springframework.ai.converter.BeanOutputConverter;
+import org.springframework.ai.converter.StructuredOutputConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,21 +41,37 @@ public class AiService {
     }
 
     public String enterprise(String q) {
-
-
-        PromptTemplate promptTemplate=new PromptTemplate(
-                """
-                tell me about  %s
-                """.formatted("java")
-        );
-        SystemPromptTemplate systemPromptTemplate = SystemPromptTemplate.builder()
-                .template("You are a helpful {name} assistant.")
-                .build();
-        Message systemMessage = systemPromptTemplate.createMessage(Map.of("name", "codding"));
-        Message userMessage = promptTemplate.createMessage();
-        Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
-        String content = nvidiaClient.prompt(prompt).call().content();
-        System.out.println(content);
-        return    content;
+        StructuredOutputConverter<List<UserProfile>> converter=
+        new BeanOutputConverter<>(
+                new ParameterizedTypeReference<List<UserProfile>>()
+                {});
+// descriptive talking with llm
+//        PromptTemplate promptTemplate=new PromptTemplate(
+//                """
+//                top 10 indian %s in 2021
+//                """.formatted("cricketer"));
+//        SystemPromptTemplate systemPromptTemplate = SystemPromptTemplate.builder()
+//                // strict message to llm
+//                .template("""
+//                        Only give response in json format.
+//
+//
+//                        """)
+//                .build();
+//        Message systemMessage = systemPromptTemplate.createMessage(Map.of("name", "cricket"));
+//        Message userMessage = promptTemplate.createMessage();
+//        Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
+//        List<UserProfile> entity = nvidiaClient.prompt(prompt).call().entity(converter);
+//
+//        System.out.println(entity);
+//        return    entity.toString();
+        // using fluent api
+     var entity=   nvidiaClient.prompt()
+                .system(system->system.text("Only give response in json format !"))
+                .user(user->user.text("top 10 indian %s in 2021".formatted("cricketer")))
+                .call()
+                .entity(converter);
+        System.out.println(entity);
+        return entity.toString();
     }
 }
