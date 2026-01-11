@@ -77,18 +77,28 @@ public class AiService {
 //        System.out.println(entity);
 //        return entity.toString();
         ChatClient.ChatClientRequestSpec prompt1 = nvidiaClient.prompt(prompt);
-
+//
         ChatClient.CallResponseSpec call = prompt1.call();
+
         ChatResponse chatClientResponse = call.chatResponse();
-        System.out.println("________________________________________________________________________________________________");
-        System.out.println(chatClientResponse);
-        System.out.println("________________________________________________________________________________________________");
+        System.out.println("after call : "+chatClientResponse.getMetadata().getModel());;
+        System.out.println("after call metadata  : "+chatClientResponse.getResult().getOutput().getMetadata());
+        System.out.println(  " after call  chatClientResponse.getMetadata().getPromptMetadata() ");
+//        while (chatClientResponse.getMetadata().getPromptMetadata().iterator().hasNext()){
+//            System.out.println(chatClientResponse.getMetadata().getPromptMetadata().iterator().next());
+//        }
+//        System.out.println(chatClientResponse.getMetadata().getUsage());;
+        return  null;
+
+//        System.out.println("________________________________________________________________________________________________");
+//        System.out.println(chatClientResponse);
+//        System.out.println("________________________________________________________________________________________________");
 //        String text = chatClientResponse.getResult().getOutput().getText();
 //return text;
-        List<UserProfile> entity = call.entity(converter);
+//        List<UserProfile> entity = call.entity(converter);
 //ś
-        System.out.println(entity);
-        return    entity.toString();
+//        System.out.println(entity);
+//        return    entity.toString();
 //
         // using fluent api
 //     var entity=   nvidiaClient.prompt()

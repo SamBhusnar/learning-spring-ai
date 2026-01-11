@@ -6,6 +6,8 @@ import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.metadata.PromptMetadata;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 
 import java.util.ArrayList;
@@ -30,6 +32,10 @@ public class JsonOnlyAdvisor implements CallAdvisor {
 
         // 🔹 BEFORE LLM CALL
         Prompt originalPrompt = request.prompt();
+        ChatOptions options = request.prompt().getOptions();
+        System.out.println("------------------------");
+        System.out.println(request.prompt().getOptions());
+        System.out.println("------------------------");
         List<Message> messages = new ArrayList<>(originalPrompt.getUserMessages());
         SystemMessage systemMessage = originalPrompt.getSystemMessage();
         if(!systemMessage.getText().isEmpty()||!systemMessage.getText().isBlank()){
@@ -45,31 +51,29 @@ public class JsonOnlyAdvisor implements CallAdvisor {
         if(  !instructions.isEmpty()){
             instructions.forEach(messages::addFirst);
         }
-//        messages.addFirst( new SystemMessage("""
-//            only give information in json not in text.
-//            don't give any explanation.
-//            don't give any extra information.
-//            complete the json .
-//            don't terminate the json with any extra information.
-//            don't terminate the json without completing it.
-//                Each profile must contain:
-//                        - name
-//                        - age
-//                        - skills (cricket-related)
-//        """));
+
         System.out.println(messages);
-        Prompt modifiedPrompt = new Prompt(messages);
+        Prompt modifiedPrompt = new Prompt(messages,options);
 
-
+        System.out.println("req. :  model : "+request.prompt().getOptions().getModel());;
+        System.out.println("req. :  max tokens : "+request.prompt().getOptions().getMaxTokens());;
+        System.out.println(" req : temp : "+request.prompt().getOptions().getTemperature());
+        System.out.println(" req : context : "+request.context());
         ChatClientRequest modifiedRequest =
                 ChatClientRequest.builder()
+
 
                         .prompt(modifiedPrompt)
 
                         .build();
 
-        // 🔹 CALL NEXT ADVISOR / MODEL
 
+
+        // following commented lines gives null pointer exceptions
+
+        System.out.println(" modifiedRequest.prompt().getOptions().getModel() "+modifiedRequest.prompt().getOptions().getModel());
+        System.out.println(" modifiedRequest.prompt().getOptions().getTemperature() "+modifiedRequest.prompt().getOptions().getTemperature());
+        System.out.println(" modifiedRequest.prompt().getOptions().getMaxTokens() "+modifiedRequest.prompt().getOptions().getMaxTokens());
         ChatClientResponse response = chain.nextCall(modifiedRequest);
 
         // 🔹 AFTER LLM CALL (optional)

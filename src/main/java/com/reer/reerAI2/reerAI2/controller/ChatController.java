@@ -1,21 +1,26 @@
 package com.reer.reerAI2.reerAI2.controller;
 
 import com.reer.reerAI2.reerAI2.service.AiService;
+import com.reer.reerAI2.reerAI2.service.AiServiceStreaming;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 
 @RestController
 public class ChatController {
 
-    private final AiService aiService;
+    private final AiServiceStreaming aiServiceStreaming;
+    private  final AiService aiService;
 
-    public ChatController(AiService aiService) {
-        this.aiService = aiService;
+    public ChatController(AiServiceStreaming aiServiceStreaming,AiService aiService) {
+        this.aiServiceStreaming = aiServiceStreaming;
+        this.aiService=aiService;
     }
 
-    @GetMapping("/chat")
+    @GetMapping("/chat" )
     public ResponseEntity<String> chat(
             @RequestParam String q,
             @RequestParam String askFor) {
@@ -27,6 +32,19 @@ public class ChatController {
             default -> ResponseEntity.badRequest()
                     .body("askFor must be fast | smart | enterprise");
         };
+    }
+    @GetMapping(value = "/chat/streaming"  ,produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> chatStreaming(
+            @RequestParam String q,
+            @RequestParam String askFor) {
+
+         if (askFor.equalsIgnoreCase( "enterprise" )) {
+
+            return  aiServiceStreaming.enterprise(q);
+        } else{
+
+               throw  new RuntimeException("only askFor=enterprise allowed not others ");
+        }
     }
 
 }
