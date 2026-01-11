@@ -3,6 +3,8 @@ package com.reer.reerAI2.reerAI2.service;
 import com.reer.reerAI2.reerAI2.records.UserProfile;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
@@ -46,32 +48,61 @@ public class AiService {
                 new ParameterizedTypeReference<List<UserProfile>>()
                 {});
 // descriptive talking with llm
-//        PromptTemplate promptTemplate=new PromptTemplate(
-//                """
-//                top 10 indian %s in 2021
-//                """.formatted("cricketer"));
+        PromptTemplate promptTemplate=new PromptTemplate(
+                """
+     Create top 10 Indian %s profiles from 2021 !
+     
+ """.formatted("cricketer"));
 //        SystemPromptTemplate systemPromptTemplate = SystemPromptTemplate.builder()
 //                // strict message to llm
 //                .template("""
-//                        Only give response in json format.
-//
-//
-//                        """)
+//You MUST return valid JSON.
+//Return ONLY JSON.
+//Do NOT add explanations.
+//""")
 //                .build();
-//        Message systemMessage = systemPromptTemplate.createMessage(Map.of("name", "cricket"));
-//        Message userMessage = promptTemplate.createMessage();
-//        Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
+//        Message systemMessage = systemPromptTemplate.createMessage();
+//       Message systemMessage= new SystemMessage(
+//                """
+//                       give information in only text  not in json
+//                        """
+//        );
+        Message userMessage = promptTemplate.createMessage();
+        Message systemMessage=new SystemMessage("""
+        Strictly must obey these instructions :
+                 %s
+        """.formatted(converter.getFormat()));
+        Prompt prompt = new Prompt(List.of( systemMessage,  userMessage));
 //        List<UserProfile> entity = nvidiaClient.prompt(prompt).call().entity(converter);
-//
 //        System.out.println(entity);
-//        return    entity.toString();
-        // using fluent api
-     var entity=   nvidiaClient.prompt()
-                .system(system->system.text("Only give response in json format !"))
-                .user(user->user.text("top 10 indian %s in 2021".formatted("cricketer")))
-                .call()
-                .entity(converter);
+//        return entity.toString();
+        ChatClient.ChatClientRequestSpec prompt1 = nvidiaClient.prompt(prompt);
+
+        ChatClient.CallResponseSpec call = prompt1.call();
+        ChatResponse chatClientResponse = call.chatResponse();
+        System.out.println("________________________________________________________________________________________________");
+        System.out.println(chatClientResponse);
+        System.out.println("________________________________________________________________________________________________");
+//        String text = chatClientResponse.getResult().getOutput().getText();
+//return text;
+        List<UserProfile> entity = call.entity(converter);
+//ś
         System.out.println(entity);
-        return entity.toString();
+        return    entity.toString();
+//
+        // using fluent api
+//     var entity=   nvidiaClient.prompt()
+//                .system(system->system.text("Only give response in json format !"))
+//                .user(user->user.text("""
+//    Create top 10 Indian %s profiles from 2021.
+//    Each profile must contain:
+//    - name
+//    - age
+//    - skills (cricket-related)
+//""".formatted("cricketer")))
+//                .call()
+//                .entity(converter);
+//        System.out.println(entity);
+//        return entity.toString();
     }
 }
