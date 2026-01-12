@@ -1,13 +1,13 @@
 package com.reer.reerAI2.reerAI2.service;
 
 import com.reer.reerAI2.reerAI2.records.UserProfile;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.converter.StructuredOutputConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,9 +15,9 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
+@Slf4j
 public class AiService {
 
     private final ChatClient llama3Client;  // Ollama
@@ -43,16 +43,16 @@ public class AiService {
     }
 
     public String enterprise(String q) {
-        StructuredOutputConverter<List<UserProfile>> converter=
-        new BeanOutputConverter<>(
-                new ParameterizedTypeReference<List<UserProfile>>()
-                {});
+        StructuredOutputConverter<List<UserProfile>> converter =
+                new BeanOutputConverter<>(
+                        new ParameterizedTypeReference<List<UserProfile>>() {
+                        });
 // descriptive talking with llm
-        PromptTemplate promptTemplate=new PromptTemplate(
+        PromptTemplate promptTemplate = new PromptTemplate(
                 """
-     Create top 10 Indian %s profiles from 2021 !
-     
- """.formatted("cricketer"));
+                            Create top 10 Indian %s profiles from 2021 !
+                        
+                        """.formatted("cricketer"));
 //        SystemPromptTemplate systemPromptTemplate = SystemPromptTemplate.builder()
 //                // strict message to llm
 //                .template("""
@@ -68,11 +68,11 @@ public class AiService {
 //                        """
 //        );
         Message userMessage = promptTemplate.createMessage();
-        Message systemMessage=new SystemMessage("""
-        Strictly must obey these instructions :
-                 %s
-        """.formatted(converter.getFormat()));
-        Prompt prompt = new Prompt(List.of( systemMessage,  userMessage));
+        Message systemMessage = new SystemMessage("""
+                Strictly must obey these instructions :
+                         %s
+                """.formatted(converter.getFormat()));
+        Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
 //        List<UserProfile> entity = nvidiaClient.prompt(prompt).call().entity(converter);
 //        System.out.println(entity);
 //        return entity.toString();
@@ -81,14 +81,15 @@ public class AiService {
         ChatClient.CallResponseSpec call = prompt1.call();
 
         ChatResponse chatClientResponse = call.chatResponse();
-        System.out.println("after call : "+chatClientResponse.getMetadata().getModel());;
-        System.out.println("after call metadata  : "+chatClientResponse.getResult().getOutput().getMetadata());
-        System.out.println(  " after call  chatClientResponse.getMetadata().getPromptMetadata() ");
+        System.out.println("after call : " + chatClientResponse.getMetadata().getModel());
+        ;
+        System.out.println("after call metadata  : " + chatClientResponse.getResult().getOutput().getMetadata());
+        System.out.println(" after call  chatClientResponse.getMetadata().getPromptMetadata() ");
 //        while (chatClientResponse.getMetadata().getPromptMetadata().iterator().hasNext()){
 //            System.out.println(chatClientResponse.getMetadata().getPromptMetadata().iterator().next());
 //        }
 //        System.out.println(chatClientResponse.getMetadata().getUsage());;
-        return  null;
+        return chatClientResponse.getResult().getOutput().getText();
 
 //        System.out.println("________________________________________________________________________________________________");
 //        System.out.println(chatClientResponse);
@@ -114,5 +115,14 @@ public class AiService {
 //                .entity(converter);
 //        System.out.println(entity);
 //        return entity.toString();
+    }
+
+    public String enterpriseOnlyForText(String q) {
+        try {
+            return nvidiaClient.prompt(q).call().content();
+        } catch (Exception e) {
+            log.error("error occurred in enterpriseOnlyForText method ");
+            return e.getMessage();
+        }
     }
 }

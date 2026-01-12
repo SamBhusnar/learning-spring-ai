@@ -33,6 +33,21 @@ public class ChatController {
                     .body("askFor must be fast | smart | enterprise");
         };
     }
+    @GetMapping("/chat/without-entity" )
+    public ResponseEntity<String> chatWithoutEntity(
+            @RequestParam String q,
+            @RequestParam String askFor) {
+
+
+            if( askFor.equalsIgnoreCase("enterprise") ){
+        return     ResponseEntity.ok(aiService.enterpriseOnlyForText(q));
+        }
+            else{
+      return       ResponseEntity.badRequest()
+                    .body("askFor must be fast | smart | enterprise");
+        }
+
+    }
     @GetMapping(value = "/chat/streaming"  ,produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> chatStreaming(
             @RequestParam String q,
