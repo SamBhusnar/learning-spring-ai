@@ -3,6 +3,7 @@ package com.reer.reerAI2.reerAI2.service;
 import com.reer.reerAI2.reerAI2.records.UserProfile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -117,12 +118,15 @@ public class AiService {
 //        return entity.toString();
     }
 
-    public String enterpriseOnlyForText(String q) {
-        try {
-            return nvidiaClient.prompt(q).call().content();
-        } catch (Exception e) {
-            log.error("error occurred in enterpriseOnlyForText method ");
-            return e.getMessage();
-        }
+    public String enterpriseOnlyForText(String q, String userId) {
+
+        return nvidiaClient.prompt(q)
+
+                .advisors(adv -> adv.param(ChatMemory.CONVERSATION_ID, userId))
+
+
+                .call().content();
+
+
     }
 }

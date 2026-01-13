@@ -29,7 +29,6 @@ public class JsonOnlyAdvisor implements CallAdvisor {
             ChatClientRequest request,
             CallAdvisorChain chain) {
 
-        // 🔹 BEFORE LLM CALL
         Prompt originalPrompt = request.prompt();
         ChatOptions options = request.prompt().getOptions();
         System.out.println("------------------------");
@@ -39,10 +38,6 @@ public class JsonOnlyAdvisor implements CallAdvisor {
         SystemMessage systemMessage = originalPrompt.getSystemMessage();
         if (!systemMessage.getText().isEmpty() || !systemMessage.getText().isBlank()) {
             messages.addFirst(systemMessage);
-//            System.out.println("_____________________________________________________________________________________");
-//            System.out.println(" originalPrompt.getSystemMessage  : " +originalPrompt.getSystemMessage() );
-//            System.out.println( "systemMessage.getText() : "+  systemMessage.getText());
-//            System.out.println("_____________________________________________________________________________________");
         }
 
 
@@ -50,30 +45,21 @@ public class JsonOnlyAdvisor implements CallAdvisor {
         if (!instructions.isEmpty()) {
             instructions.forEach(messages::addFirst);
         }
+        System.out.println("context :------------------------------------------------------" + request.context());
 
         System.out.println(messages);
         Prompt modifiedPrompt = new Prompt(messages, options);
-
-//        System.out.println("req. :  model : "+request.prompt().getOptions().getModel());;
-//        System.out.println("req. :  max tokens : "+request.prompt().getOptions().getMaxTokens());;
-//        System.out.println(" req : temp : "+request.prompt().getOptions().getTemperature());
-//        System.out.println(" req : context : "+request.context());
         ChatClientRequest modifiedRequest =
                 ChatClientRequest.builder()
-
+                        .context(request.context())
 
                         .prompt(modifiedPrompt)
+
 
                         .build();
 
 
-        // following commented lines gives null pointer exceptions
-
-//        System.out.println(" modifiedRequest.prompt().getOptions().getModel() "+modifiedRequest.prompt().getOptions().getModel());
-//        System.out.println(" modifiedRequest.prompt().getOptions().getTemperature() "+modifiedRequest.prompt().getOptions().getTemperature());
-//        System.out.println(" modifiedRequest.prompt().getOptions().getMaxTokens() "+modifiedRequest.prompt().getOptions().getMaxTokens());
-
-        // 🔹 AFTER LLM CALL (optional)
-        return chain.nextCall(modifiedRequest);
+        var response = chain.nextCall(modifiedRequest);
+        return response;
     }
 }

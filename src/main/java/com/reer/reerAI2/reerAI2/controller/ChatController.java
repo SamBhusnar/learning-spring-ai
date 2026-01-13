@@ -5,6 +5,7 @@ import com.reer.reerAI2.reerAI2.service.AiServiceStreaming;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
@@ -13,14 +14,14 @@ import reactor.core.publisher.Flux;
 public class ChatController {
 
     private final AiServiceStreaming aiServiceStreaming;
-    private  final AiService aiService;
+    private final AiService aiService;
 
-    public ChatController(AiServiceStreaming aiServiceStreaming,AiService aiService) {
+    public ChatController(AiServiceStreaming aiServiceStreaming, AiService aiService) {
         this.aiServiceStreaming = aiServiceStreaming;
-        this.aiService=aiService;
+        this.aiService = aiService;
     }
 
-    @GetMapping("/chat" )
+    @GetMapping("/chat")
     public ResponseEntity<String> chat(
             @RequestParam String q,
             @RequestParam String askFor) {
@@ -33,32 +34,36 @@ public class ChatController {
                     .body("askFor must be fast | smart | enterprise");
         };
     }
-    @GetMapping("/chat/without-entity" )
+
+    @GetMapping("/chat/without-entity")
     public ResponseEntity<String> chatWithoutEntity(
             @RequestParam String q,
-            @RequestParam String askFor) {
+            @RequestParam String askFor,
+            @RequestHeader("userName") String userId
+    ) {
 
 
-            if( askFor.equalsIgnoreCase("enterprise") ){
-        return     ResponseEntity.ok(aiService.enterpriseOnlyForText(q));
-        }
-            else{
-      return       ResponseEntity.badRequest()
+        if (askFor.equalsIgnoreCase("enterprise")) {
+            return ResponseEntity.ok(aiService.enterpriseOnlyForText(q, userId));
+        } else {
+            return ResponseEntity.badRequest()
                     .body("askFor must be fast | smart | enterprise");
         }
 
     }
-    @GetMapping(value = "/chat/streaming"  ,produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+
+    @GetMapping(value = "/chat/streaming", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> chatStreaming(
             @RequestParam String q,
-            @RequestParam String askFor) {
+            @RequestParam String askFor
+    ) {
 
-         if (askFor.equalsIgnoreCase( "enterprise" )) {
+        if (askFor.equalsIgnoreCase("enterprise")) {
 
-            return  aiServiceStreaming.enterprise(q);
-        } else{
+            return aiServiceStreaming.enterprise(q);
+        } else {
 
-               throw  new RuntimeException("only askFor=enterprise allowed not others ");
+            throw new RuntimeException("only askFor=enterprise allowed not others ");
         }
     }
 
