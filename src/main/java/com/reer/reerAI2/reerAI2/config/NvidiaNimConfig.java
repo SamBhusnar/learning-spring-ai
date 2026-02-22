@@ -39,7 +39,7 @@ public class NvidiaNimConfig {
                                         .build(),
                                 new JsonOnlyAdvisor(),
                                 new SimpleLoggerAdvisor(),
-                                new SafeGuardAdvisor(List.of("onasdfasdfe")))
+                                new SafeGuardAdvisor(List.of("illegal work")))
                 )
 
                 .defaultOptions(ChatOptions.builder()

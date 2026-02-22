@@ -27,7 +27,8 @@ public class JsonOnlyAdvisor implements CallAdvisor {
     @Override
     public ChatClientResponse adviseCall(
             ChatClientRequest request,
-            CallAdvisorChain chain) {
+            CallAdvisorChain chain
+    ) {
 
         Prompt originalPrompt = request.prompt();
         ChatOptions options = request.prompt().getOptions();
